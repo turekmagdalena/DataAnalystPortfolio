@@ -10,3 +10,4 @@ Skills presented:
 - Date Extraction
 - RANK() OVER (PARTITION BY ... )
 - CASE WHEN
+
