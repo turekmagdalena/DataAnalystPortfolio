@@ -6,11 +6,11 @@
 
 WITH Orders_CTE
 AS
-(SELECT o.[OrderID], o.[CustomerID], o.[OrderDate], ol.[StockItemID], ol.[Quantity], ol.[UnitPrice], ol.[TaxRate], ol.PickingCompletedWhen
-FROM [WideWorldImporters].[Sales].[Orders] AS o
-JOIN [WideWorldImporters].[Sales].[OrderLines] AS ol
-ON o.[OrderID] = ol.[OrderID]
-)
+	(SELECT o.OrderID, o.CustomerID, o.OrderDate, ol.StockItemID, ol.Quantity, ol.UnitPrice, ol.TaxRate, ol.PickingCompletedWhen
+	FROM [WideWorldImporters].[Sales].[Orders] AS o
+		JOIN [WideWorldImporters].[Sales].[OrderLines] AS ol
+		ON o.OrderID = ol.OrderID
+	)
 SELECT * FROM Orders_CTE
 
 WHERE PickingCompletedWhen IS NULL
@@ -27,17 +27,18 @@ ORDER BY OrderID
 /***
 WITH Orders_CTE
 AS
-(SELECT o.[OrderID], o.[CustomerID], o.[OrderDate], ol.[StockItemID], ol.UnitPrice, (ol.Quantity * ol.UnitPrice) * (1 + ol.TaxRate/100) AS OrderLineCost
-FROM [WideWorldImporters].[Sales].[Orders] AS o
-JOIN [WideWorldImporters].[Sales].[OrderLines] AS ol
-ON o.[OrderID] = ol.[OrderID]
-WHERE ol.PickingCompletedWhen IS NOT NULL
-)
+	(SELECT o.OrderID, o.CustomerID, o.OrderDate, ol.StockItemID, ol.UnitPrice, (ol.Quantity * ol.UnitPrice) * (1 + ol.TaxRate/100) AS OrderLineCost
+	FROM [WideWorldImporters].[Sales].[Orders] AS o
+		JOIN [WideWorldImporters].[Sales].[OrderLines] AS ol
+		ON o.OrderID = ol.OrderID
+	WHERE ol.PickingCompletedWhen IS NOT NULL
+	)
 SELECT * FROM Orders_CTE
 
 WHERE OrderID < 10
 
 ORDER BY OrderID
+
 ***/
 
 /*** DATA ANALYSIS ***/
@@ -59,13 +60,13 @@ ORDER BY COUNT(OrderID) DESC;
 --Check how much income orders generate
 
 WITH Orders_CTE
-AS
-(SELECT o.[OrderID], o.[CustomerID], o.[OrderDate], ol.[StockItemID], ol.UnitPrice, (ol.Quantity * ol.UnitPrice) * (1 + ol.TaxRate/100) AS OrderLineCost
-FROM [WideWorldImporters].[Sales].[Orders] AS o
-JOIN [WideWorldImporters].[Sales].[OrderLines] AS ol
-ON o.[OrderID] = ol.[OrderID]
-WHERE ol.PickingCompletedWhen IS NOT NULL
-)
+	AS
+	(SELECT o.OrderID, o.CustomerID, o.OrderDate, ol.StockItemID, ol.UnitPrice, (ol.Quantity * ol.UnitPrice) * (1 + ol.TaxRate/100) AS OrderLineCost
+	FROM [WideWorldImporters].[Sales].[Orders] AS o
+		JOIN [WideWorldImporters].[Sales].[OrderLines] AS ol
+		ON o.OrderID = ol.OrderID
+	WHERE ol.PickingCompletedWhen IS NOT NULL
+	)
 
 SELECT YEAR(OrderDate) as OrderYear, MONTH(OrderDate) as OrderMonth, SUM(OrderLineCost) as OrdersIncomePerMonth
 FROM Orders_CTE
@@ -83,20 +84,20 @@ ORDER BY SUM(OrderLineCost) DESC
 /***
 WITH Orders_CTE
 AS
-(SELECT o.[OrderDate], ol.[StockItemID]
-FROM [WideWorldImporters].[Sales].[Orders] AS o
-JOIN [WideWorldImporters].[Sales].[OrderLines] AS ol
-ON o.[OrderID] = ol.[OrderID]
-WHERE ol.PickingCompletedWhen IS NOT NULL
-),
+	(SELECT o.OrderDate, ol.StockItemID
+	FROM [WideWorldImporters].[Sales].[Orders] AS o
+		JOIN [WideWorldImporters].[Sales].[OrderLines] AS ol
+		ON o.OrderID = ol.OrderID
+	WHERE ol.PickingCompletedWhen IS NOT NULL
+	),
 MonhtlyOrders_CTE 
 AS
-(SELECT YEAR(OrderDate) AS OrderYear, MONTH(OrderDate) as OrderMonth, StockItemID,
-COUNT(StockItemID) AS StockItemAmount,
-RANK() OVER (PARTITION BY YEAR(OrderDate), MONTH(OrderDate) ORDER BY COUNT(StockItemID) DESC) AS Rank
-FROM Orders_CTE
-GROUP BY YEAR(OrderDate), MONTH(OrderDate), StockItemID
-)
+	(SELECT YEAR(OrderDate) AS OrderYear, MONTH(OrderDate) as OrderMonth, StockItemID,
+	COUNT(StockItemID) AS StockItemAmount,
+	RANK() OVER (PARTITION BY YEAR(OrderDate), MONTH(OrderDate) ORDER BY COUNT(StockItemID) DESC) AS Rank
+	FROM Orders_CTE
+	GROUP BY YEAR(OrderDate), MONTH(OrderDate), StockItemID
+	)
 
 SELECT * FROM MonhtlyOrders_CTE
 WHERE Rank <= 3
@@ -112,12 +113,12 @@ ORDER BY OrderYear, OrderMonth, Rank
 /***
 WITH Orders_CTE
 AS
-(SELECT o.[CustomerID], (ol.Quantity * ol.UnitPrice) * (1 + ol.TaxRate/100) AS OrderLineCost
-FROM [WideWorldImporters].[Sales].[Orders] AS o
-JOIN [WideWorldImporters].[Sales].[OrderLines] AS ol
-ON o.[OrderID] = ol.[OrderID]
-WHERE ol.PickingCompletedWhen IS NOT NULL
-)
+	(SELECT o.CustomerID, (ol.Quantity * ol.UnitPrice) * (1 + ol.TaxRate/100) AS OrderLineCost
+	FROM [WideWorldImporters].[Sales].[Orders] AS o
+		JOIN [WideWorldImporters].[Sales].[OrderLines] AS ol
+		ON o.OrderID = ol.OrderID
+	WHERE ol.PickingCompletedWhen IS NOT NULL
+	)
 SELECT CustomerID, 
 	SUM(OrderLineCost) as SumOfOrders, 
 	AVG(OrderLineCost) as AverageSpent,
@@ -131,7 +132,7 @@ ORDER BY SumRank
 
 /*** Which is more profitable - selling a lot of cheap products or a few expensive ones? ***/ 
 
--- First I need to verify what are differences between prices
+-- First I need to verify what are the differences between prices
 /***
 SELECT DISTINCT(UnitPrice) 
 FROM [WideWorldImporters].[Sales].[OrderLines]
